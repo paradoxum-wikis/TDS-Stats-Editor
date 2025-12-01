@@ -19,7 +19,7 @@
     "wikistxr": "^0.0.8"
   },
   "devDependencies": {
-    "prettier": "3.6.2",
+    "prettier": "3.7.3",
     "vite": "^7.2.6"
   }
 }
