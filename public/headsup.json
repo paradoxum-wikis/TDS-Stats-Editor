@@ -1,8 +1,8 @@
 {
   "poll": {
-    "endDate": "2025-08-21",
-    "id": "NULL1132135",
-    "title": "Medic stats",
-    "description": "We've added all new stats from v1.73 including Medic. Reset to Default or Clear All Towers to get the new stats. Report any issues you find in the TDS Wiki Discord server, or dm 't7ru'."
+    "endDate": "2026-08-21",
+    "id": "NULL1132131",
+    "title": "End of Service",
+    "description": "The current Statistics Editor project is being sunset, we're working on rewriting it entirely, and are planning to release it somewhere early next year. All tower statistics will stop being updated by the current maintainer; however, if you wish to help keep the numbers updated, feel free to reach out to 't7ru' on Discord. Thank you for using the site."
   }
 }
