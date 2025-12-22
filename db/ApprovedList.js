@@ -84,6 +84,7 @@ const approvedTowers = [
   "Hellscream2008/War Machine + (Bottom path)",
   "NoobGlitch/Recruit",
   "Vessel Of Infinite Destruction/Paintballer",
+  "EconomyOnRoblox/Gladiator",
 ];
 
 // List of featured towers
