@@ -78,13 +78,18 @@ class TDSWikiFetcher {
   }
 
   // gets towers from wiki
-  async fetchTowers() {
+  async fetchTowers(forceRefresh = false) {
     try {
       console.log("fetching towers from wiki...");
 
       let html;
       try {
-        const response = await fetch(this.dbtreeEndpoint);
+        const apiUrl = forceRefresh
+          ? `${this.dbtreeEndpoint}?refresh=true`
+          : this.dbtreeEndpoint;
+
+        this.currentProxyIndex = 0;
+        const response = await fetch(apiUrl);
 
         if (!response.ok) {
           throw new Error(

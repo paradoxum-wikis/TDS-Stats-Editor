@@ -179,9 +179,9 @@ document.addEventListener("DOMContentLoaded", function () {
             </button>`;
     }
 
-    const authorLink = `<a href="https://tds.fandom.com/wiki/User:${encodeURIComponent(tower.author)}" 
-                              target="_blank" 
-                              class="author-link" 
+    const authorLink = `<a href="https://tds.fandom.com/wiki/User:${encodeURIComponent(tower.author)}"
+                              target="_blank"
+                              class="author-link"
                               title="View ${tower.author}'s profile">
                               ${tower.author}
                            </a>`;
@@ -204,7 +204,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 `
                     : ""
                 }
-                <img src="${tower.image}" class="card-img-top" loading="lazy" alt="${tower.name}" 
+                <img src="${tower.image}" class="card-img-top" loading="lazy" alt="${tower.name}"
                      onerror="this.src='https://static.wikia.nocookie.net/tower-defense-sim/images/4/4a/Site-favicon.ico'; this.classList.add('img-error');">
                 <div class="card-body">
                     <h5 class="card-title">${tower.name}</h5>
@@ -267,7 +267,7 @@ document.addEventListener("DOMContentLoaded", function () {
       document.getElementById("all-towers").innerHTML =
         '<div class="col-12 text-center text-light p-5"><div class="spinner-border" role="status"></div><p class="mt-2">Loading towers from the TDS Wiki...</p></div>';
 
-      const towers = await wikiFetcher.fetchTowers();
+      const towers = await wikiFetcher.fetchTowers(forceRefresh);
 
       localStorage.setItem("towerDataCache", JSON.stringify(towers));
       localStorage.setItem("towerDataTimestamp", Date.now().toString());

@@ -85,6 +85,7 @@ const approvedTowers = [
   "NoobGlitch/Recruit",
   "Vessel Of Infinite Destruction/Paintballer",
   "EconomyOnRoblox/Gladiator",
+  "Yanboblox22/Suppliant",
 ];
 
 // List of featured towers
@@ -108,6 +109,7 @@ const featuredTowers = [
   "Vessel Of Infinite Destruction/Golden Engineer",
   "Vessel Of Infinite Destruction/Golden Mortar",
   "Vessel Of Infinite Destruction/Paintballer",
+  "Yanboblox22/Suppliant",
 ];
 
 // List of grandfathered towers
@@ -126,7 +128,7 @@ const highlights = [
   "Vessel Of Infinite Destruction/Golden Engineer",
   "Vessel Of Infinite Destruction/Golden Mortar",
   "Vessel Of Infinite Destruction/Toxic Gunner",
-  "Vessel Of Infinite Destruction/Paintballer",
+  "Yanboblox22/Suppliant",
 ];
 
 window.approvedTowers = approvedTowers;
