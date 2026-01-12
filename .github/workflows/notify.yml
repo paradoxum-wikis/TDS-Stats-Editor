@@ -2,7 +2,7 @@ name: Notify Approved Tower Authors
 
 on:
   push:
-    branches: [main, master]
+    branches: [main]
     paths:
       - "db/ApprovedList.js"
 
@@ -14,14 +14,14 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           fetch-depth: 2
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
-          node-version: "22"
+          node-version: 24
 
       - name: Detect changes and notify users
         run: node .github/scripts/notify.js
