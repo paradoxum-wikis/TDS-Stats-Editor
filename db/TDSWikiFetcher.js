@@ -5,129 +5,58 @@
 
 class TDSWikiFetcher {
   constructor() {
-    this.wikiBaseUrl = "https://tds.fandom.com";
-    this.categoryUrl = "/wiki/User:Gabonnie/DBT?action=render"; // currently used as 2nd step and potential fallback
-    this.dbtreeEndpoint = "https://api.tds-editor.com/dbtree";
-
-    // backup proxies in case one fails
-    this.corsProxies = [
-      "https://api.tds-editor.com/?url=",
-      "https://api.cors.lol/?url=",
-      "https://api.codetabs.com/v1/proxy?quest=",
-      "https://api.allorigins.win/raw?url=",
-    ];
-    this.currentProxyIndex = 0;
-
-    // get featured towers
+    this.apiBaseUrl = "https://tds.fandom.com/api.php";
+    this.robloxProxyBase = "https://api.tds-editor.com/?url=";
+    this.sourcePage = "User:Gabonnie/DBT";
     this.featuredTowers = window.featuredTowers || [];
   }
 
-  getCurrentProxy() {
-    return this.corsProxies[this.currentProxyIndex];
-  }
+  async fetchFromApi(params) {
+    const defaultParams = {
+      action: "parse",
+      format: "json",
+      origin: "*", // Enables CORS for Fandom
+      disablepp: "true",
+    };
 
-  switchToNextProxy() {
-    if (this.currentProxyIndex < this.corsProxies.length - 1) {
-      this.currentProxyIndex++;
-      console.log(`switching to backup proxy: ${this.getCurrentProxy()}`);
-      return true;
-    }
-    console.warn("all proxies failed");
-    return false;
-  }
+    const finalParams = new URLSearchParams({ ...defaultParams, ...params });
+    const url = `${this.apiBaseUrl}?${finalParams.toString()}`;
 
-  async fetchWithFallback(url) {
-    let attempts = 0;
-    const maxAttempts = this.corsProxies.length;
-
-    while (attempts < maxAttempts) {
-      try {
-        const proxy = this.getCurrentProxy();
-        console.log(
-          `trying proxy ${this.currentProxyIndex + 1}/${maxAttempts}: ${proxy}`,
-        );
-
-        if (!url.startsWith("http://") && !url.startsWith("https://")) {
-          url = "https://" + url;
-        }
-
-        const requestUrl = `${proxy}${encodeURIComponent(url)}`;
-        const response = await fetch(requestUrl, {
-          headers: {
-            Origin: window.location.origin,
-            "X-Requested-With": "XMLHttpRequest",
-          },
-        });
-
-        if (!response.ok) {
-          throw new Error(`http error! status: ${response.status}`);
-        }
-
-        return response;
-      } catch (error) {
-        console.warn(`proxy ${this.currentProxyIndex + 1} failed:`, error);
-        attempts++;
-
-        if (!this.switchToNextProxy()) {
-          throw new Error("all proxies failed");
-        }
-      }
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(`Wiki API returned status: ${response.status}`);
     }
 
-    throw new Error("all proxies failed after max attempts");
+    return response.json();
   }
 
-  // gets towers from wiki
-  async fetchTowers(forceRefresh = false) {
+  async fetchTowers() {
     try {
-      console.log("fetching towers from wiki...");
+      console.log("fetching towers from wiki API...");
 
-      let html;
-      try {
-        const apiUrl = forceRefresh
-          ? `${this.dbtreeEndpoint}?refresh=true`
-          : this.dbtreeEndpoint;
+      const data = await this.fetchFromApi({
+        page: this.sourcePage,
+        prop: "text",
+      });
 
-        this.currentProxyIndex = 0;
-        const response = await fetch(apiUrl);
+      if (data.error) throw new Error(`API Error: ${data.error.info}`);
 
-        if (!response.ok) {
-          throw new Error(
-            `API endpoint failed with status: ${response.status}`,
-          );
-        }
-
-        html = await response.text();
-        console.log("Successfully fetched data from API endpoint");
-      } catch (apiError) {
-        // If API endpoint fails, try the wiki URL with proxies
-        console.warn("API endpoint failed, trying proxy fallback:", apiError);
-        this.currentProxyIndex = 0;
-
-        const wikiUrl = `${this.wikiBaseUrl}${this.categoryUrl}`;
-        const fallbackResponse = await this.fetchWithFallback(wikiUrl);
-        html = await fallbackResponse.text();
-        console.log("Successfully fetched data via proxy fallback");
-      }
-
-      // check if content is correct
-      if (
-        !html ||
-        html.trim().length === 0 ||
-        !html.includes("CategoryTreeItem")
-      ) {
-        console.warn("Invalid or empty response from API");
+      const htmlContent = data.parse?.text?.["*"];
+      if (!htmlContent) {
+        console.warn("No content found in API response");
         return this.getFallbackTowers();
       }
 
       const parser = new DOMParser();
-      const doc = parser.parseFromString(html, "text/html");
+      const doc = parser.parseFromString(
+        `<body>${htmlContent}</body>`,
+        "text/html",
+      );
 
       const towerElements = doc.querySelectorAll(".CategoryTreeItem");
       console.log(`found ${towerElements.length} towers on wiki`);
 
       if (towerElements.length === 0) {
-        console.warn("no towers found, using defaults");
         return this.getFallbackTowers();
       }
 
@@ -139,27 +68,27 @@ class TDSWikiFetcher {
           const link = element.querySelector("a");
           let fullText = link?.textContent?.trim() || "Unknown Tower";
 
-          // Handle the new format "User blog:Username/TowerName"
           if (fullText.startsWith("User blog:")) {
             fullText = fullText.replace("User blog:", "");
           }
 
-          // get tower name from path
           const towerName = fullText.includes("/")
             ? fullText.split("/").pop()
             : fullText;
 
+          const href = link?.getAttribute("href") || "";
+          const pageTitle = href.replace(/^\/wiki\//, "") || fullText;
+
           return {
             name: towerName,
-            url: link?.getAttribute("href") || "#",
+            pageTitle: decodeURIComponent(pageTitle),
+            url: href,
             image:
               "https://static.wikia.nocookie.net/tower-defense-sim/images/4/4a/Site-favicon.ico",
             author: fullText.includes("/")
               ? fullText.split("/")[0]
               : "Wiki Contributor",
-            featured: window.featuredTowers
-              ? window.featuredTowers.includes(fullText)
-              : false,
+            featured: this.featuredTowers.includes(fullText),
             highlighted: window.highlights
               ? window.highlights.includes(fullText)
               : false,
@@ -175,12 +104,8 @@ class TDSWikiFetcher {
           };
         });
 
-      if (towers.length === 0) {
-        console.warn("no towers found, using defaults");
-        return this.getFallbackTowers();
-      }
-
       console.log(`loading details for ${towers.length} towers...`);
+
       const enrichmentPromises = towers.map((tower) =>
         this.enrichTowerData(tower).catch((err) =>
           console.warn(`failed to get details for ${tower.name}:`, err),
@@ -195,230 +120,115 @@ class TDSWikiFetcher {
     }
   }
 
-  convertFileToFandomUrl(filename) {
-    try {
-      if (!window.CryptoJS || !window.CryptoJS.MD5) {
-        console.error("CryptoJS or CryptoJS.MD5 is not available");
-        return `./../htmlassets/Unavailable.png`;
-      }
-
-      const md5Hash = CryptoJS.MD5(filename).toString();
-      const firstChar = md5Hash.charAt(0);
-      const firstTwoChars = md5Hash.substring(0, 2);
-      const fandomUrl = `https://static.wikia.nocookie.net/tower-defense-sim/images/${firstChar}/${firstTwoChars}/${encodeURIComponent(filename)}`;
-
-      return fandomUrl;
-    } catch (error) {
-      console.error(`Error converting File: syntax: ${error.message}`);
-      return `./../htmlassets/Unavailable.png`;
-    }
-  }
-
-  // gets more info for a tower
   async enrichTowerData(tower) {
     try {
-      console.log(`getting data for tower: ${tower.name}`);
-      const url = tower.url.startsWith("http")
-        ? tower.url
-        : `${this.wikiBaseUrl}${tower.url}`;
+      const data = await this.fetchFromApi({
+        page: tower.pageTitle,
+        prop: "text",
+      });
 
-      const response = await this.fetchWithFallback(url);
-      const html = await response.text();
+      if (data.error || !data.parse?.text?.["*"]) {
+        throw new Error("Page content missing");
+      }
+
+      const html = data.parse.text["*"];
       const parser = new DOMParser();
-      const doc = parser.parseFromString(html, "text/html");
+      const doc = parser.parseFromString(`<body>${html}</body>`, "text/html");
 
-      let contentElement = null;
+      let contentElement = doc.querySelector(".mw-parser-output") || doc.body;
 
-      // check for the desc id
       const descElement = doc.querySelector("#desc");
       if (descElement) {
         tower.description = descElement.textContent.trim();
-        contentElement =
-          doc.querySelector(".mw-parser-output") ||
-          doc.querySelector(".page-content") ||
-          doc.querySelector("#mw-content-text") ||
-          doc.querySelector(".wds-tab__content");
       } else {
-        // old method for backwards compatibility
-        contentElement =
-          doc.querySelector(".mw-parser-output") ||
-          doc.querySelector(".page-content") ||
-          doc.querySelector("#mw-content-text") ||
-          doc.querySelector(".wds-tab__content");
+        const paragraphs = contentElement.querySelectorAll("p");
+        if (paragraphs.length > 0) {
+          tower.description = paragraphs[0].textContent.trim();
+        }
+      }
 
-        if (contentElement) {
-          // get description with old method
-          const paragraphs = contentElement.querySelectorAll("p");
-          if (paragraphs.length > 0) {
-            tower.description = paragraphs[0].textContent.trim();
-          } else {
-            // try text nodes if no paragraphs
-            const textNodes = Array.from(contentElement.childNodes).filter(
-              (node) =>
-                node.nodeType === Node.TEXT_NODE && node.textContent.trim(),
-            );
+      const images = Array.from(contentElement.querySelectorAll("img")).filter(
+        (img) => !img.closest("pre"),
+      );
 
-            if (textNodes.length > 0) {
-              tower.description = textNodes[0].textContent.trim();
-            }
+      if (images.length > 0) {
+        for (const img of images) {
+          const imgSrc = img.getAttribute("src") || "";
+          if (
+            imgSrc &&
+            !imgSrc.includes("favicon") &&
+            !imgSrc.includes("icon")
+          ) {
+            tower.image = imgSrc;
+            break;
           }
         }
       }
 
-      if (contentElement) {
-        const images = Array.from(
-          contentElement.querySelectorAll("img"),
-        ).filter((img) => !img.closest("pre")); // no pre tags allowed smh, yet
+      const preElement =
+        doc.querySelector("pre#towerdata") ||
+        doc.querySelector('pre[id="towerdata"]') ||
+        doc.querySelector("pre");
 
-        if (images.length > 0) {
-          // Use the first image that isn't a favicon or icon
-          for (const img of images) {
-            const imgSrc = img.getAttribute("src") || "";
-            if (
-              imgSrc &&
-              !imgSrc.includes("favicon") &&
-              !imgSrc.includes("icon")
-            ) {
-              tower.image = imgSrc;
-              break; // Found a suitable image, stop looking
-            }
-          }
-        }
+      if (preElement) {
+        const preContent = preElement.innerHTML.trim();
+        const linkMatch = preContent.match(
+          /<a\s+href="(\/wiki\/User_blog:.+\/.+)".*?>.*?<\/a>/i,
+        );
 
-        // check for RobloxID
-        if (!tower.image || tower.image.includes("Site-favicon.ico")) {
-          const contentText = contentElement.textContent;
+        if (linkMatch) {
+          tower.linkedTower = linkMatch[1];
+          tower.isLink = true;
+        } else {
+          try {
+            const tempDiv = document.createElement("div");
+            tempDiv.innerHTML = preContent;
+            const cleanJson = tempDiv.textContent || tempDiv.innerText || "";
 
-          // Look for File: syntax first
-          const fileMatch = contentText.match(
-            /File:([^\s"'<>()]+\.(?:png|jpg|jpeg|gif))/i,
-          );
-          if (fileMatch) {
-            const filename = fileMatch[1];
-            tower.image = this.convertFileToFandomUrl(filename);
-          } else {
-            // Continue with existing RobloxID check
-            const robloxIdMatch = contentText.match(/RobloxID(\d+)/i);
-            if (robloxIdMatch) {
-              const robloxId = robloxIdMatch[1];
-              try {
-                const roProxyUrl = `https://assetdelivery.roblox.com/v2/assetId/${robloxId}`;
-                const robloxResponse = await fetch(
-                  `https://api.tds-editor.com/?url=${encodeURIComponent(roProxyUrl)}`,
-                  {
-                    method: "GET",
-                    headers: {
-                      Origin: window.location.origin,
-                      "X-Requested-With": "XMLHttpRequest",
-                    },
-                  },
-                );
-
-                const data = await robloxResponse.json();
-                if (data?.locations?.[0]?.location) {
-                  tower.image = data.locations[0].location;
-                } else {
-                  tower.image = `./../htmlassets/Unavailable.png`;
-                }
-              } catch (error) {
-                console.warn(`failed to get roblox image ${robloxId}:`, error);
-              }
-            } else {
-              // As a last resort, find image URLs in text OUTSIDE of pre tags
-              const mainContent = Array.from(contentElement.childNodes)
-                .filter((node) => node.nodeName !== "PRE")
-                .map((node) => node.textContent || "")
-                .join(" ");
-
-              const imgUrlRegex =
-                /https?:\/\/[^\s"'<>()]+(\.png|\.jpg|\.jpeg|\.gif)(?:\?[^\s"'<>()]*)?/i;
-              const match = mainContent.match(imgUrlRegex);
-
-              if (match) {
-                tower.image = match[0];
-              }
-            }
-          }
-        }
-
-        // get tower tag
-        const allTextContent = contentElement.textContent;
-        const tagMatch = allTextContent.match(/\b(New|Rework|Rebalance)\b/);
-        if (tagMatch) {
-          tower.tag = tagMatch[0];
-        }
-
-        // get json data
-        const preElement =
-          doc.querySelector("pre#towerdata") ||
-          doc.querySelector('pre[id="towerdata"]') ||
-          doc.querySelector("pre");
-
-        if (preElement) {
-          const preContent = preElement.innerHTML.trim();
-          const linkMatch =
-            preContent.match(
-              /<a\s+href="(https?:\/\/tds\.fandom\.com\/wiki\/User_blog:.+\/.+)".*?>.*?<\/a>/i,
-            ) ||
-            preContent.match(
-              /(https?:\/\/tds\.fandom\.com\/wiki\/User_blog:.+\/.+)/i,
-            );
-
-          if (linkMatch) {
-            tower.linkedTower = linkMatch[1];
-            tower.isLink = true;
-          } else {
-            try {
-              const jsonData = JSON.parse(preContent);
-              tower.data = jsonData;
-
-              // get tower name from json
-              const firstKey = Object.keys(jsonData)[0];
-              if (firstKey && typeof firstKey === "string") {
-                tower.jsonName = firstKey;
-              }
-            } catch (jsonError) {
-              console.warn(`bad json for ${tower.name}:`, jsonError);
-            }
+            const jsonData = JSON.parse(cleanJson);
+            tower.data = jsonData;
+            const firstKey = Object.keys(jsonData)[0];
+            if (firstKey) tower.jsonName = firstKey;
+          } catch (jsonError) {
+            console.log("No valid JSON found in <pre> block for", tower.name);
           }
         }
       }
 
-      // One more check: if tower.image starts with File:, convert it
-      if (
-        tower.image &&
-        typeof tower.image === "string" &&
-        tower.image.startsWith("File:")
-      ) {
-        tower.image = this.convertFileToFandomUrl(tower.image.substring(5));
-      }
+      if (!tower.image || tower.image.includes("Site-favicon.ico")) {
+        const contentText = contentElement.textContent;
+        const robloxIdMatch = contentText.match(/RobloxID(\d+)/i);
 
-      // get date posted
-      const dateElement = doc.querySelector(".page-header__blog-post-details");
-      if (dateElement) {
-        const dateText = Array.from(dateElement.childNodes)
-          .filter((node) => node.nodeType === Node.TEXT_NODE)
-          .map((node) => node.textContent.trim())
-          .filter((text) => text && !text.includes("•"))
-          .shift();
-
-        if (dateText) {
-          tower.uploadDate = dateText;
+        if (robloxIdMatch) {
+          const robloxId = robloxIdMatch[1];
+          await this.fetchRobloxImage(robloxId, tower);
         }
-      } else {
-        // look for date elsewhere
-        const timeElement = doc.querySelector("time");
-        if (timeElement) {
-          tower.uploadDate = timeElement.textContent.trim();
-        }
-      }
-
-      // use default if no date found
-      if (!tower.uploadDate) {
-        tower.uploadDate = "Recently";
       }
     } catch (error) {
-      console.warn(`failed to get info for ${tower.name}:`, error);
+      console.warn(`enrich failed for ${tower.name}:`, error);
+    }
+  }
+
+  async fetchRobloxImage(robloxId, tower) {
+    try {
+      const roProxyUrl = `https://assetdelivery.roblox.com/v2/assetId/${robloxId}`;
+      const requestUrl = `${this.robloxProxyBase}${encodeURIComponent(roProxyUrl)}`;
+
+      const response = await fetch(requestUrl, {
+        headers: {
+          Origin: window.location.origin,
+          "X-Requested-With": "XMLHttpRequest",
+        },
+      });
+
+      if (!response.ok) throw new Error("Proxy error");
+
+      const data = await response.json();
+      if (data?.locations?.[0]?.location) {
+        tower.image = data.locations[0].location;
+      }
+    } catch (e) {
+      console.warn(`Roblox fetch failed for ID ${robloxId}`, e);
     }
   }
 
