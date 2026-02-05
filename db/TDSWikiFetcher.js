@@ -3,6 +3,8 @@
  * gets tower data from the TDS wiki
  */
 
+import { mwFileUrl } from "mediawiki-file-url";
+
 class TDSWikiFetcher {
   constructor() {
     this.apiBaseUrl = "https://tds.fandom.com/api.php";
@@ -29,14 +31,10 @@ class TDSWikiFetcher {
 
   convertFileToFandomUrl(filename) {
     try {
-      if (!window.CryptoJS || !window.CryptoJS.MD5) {
-        console.warn("CryptoJS missing, cannot convert File: syntax");
-        return `./../htmlassets/Unavailable.png`;
-      }
-      const md5Hash = CryptoJS.MD5(filename).toString();
-      const firstChar = md5Hash.charAt(0);
-      const firstTwoChars = md5Hash.substring(0, 2);
-      return `https://static.wikia.nocookie.net/tower-defense-sim/images/${firstChar}/${firstTwoChars}/${encodeURIComponent(filename)}`;
+      return mwFileUrl(
+        filename,
+        "https://static.wikia.nocookie.net/tower-defense-sim/images",
+      );
     } catch (error) {
       console.error(`Error converting File: syntax: ${error.message}`);
       return `./../htmlassets/Unavailable.png`;

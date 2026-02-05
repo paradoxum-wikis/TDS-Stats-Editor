@@ -8,8 +8,9 @@ import "bootstrap-icons/font/bootstrap-icons.css";
 
 import * as bootstrap from "bootstrap";
 window.bootstrap = bootstrap;
-import CryptoJS from "crypto-js";
-window.CryptoJS = CryptoJS;
+
+import { mwFileUrl } from "mediawiki-file-url";
+window.mwFileUrl = mwFileUrl;
 
 import "./TDSWikiFetcher.js";
 import "./TDSWikiLoader.js";

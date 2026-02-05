@@ -181,12 +181,12 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function convertFileToFandomUrl(filename) {
-    const md5Hash = CryptoJS.MD5(filename).toString();
+    if (typeof window.mwFileUrl !== "function") {
+      console.warn("mwFileUrl missing, cannot convert File: syntax");
+      return `./../htmlassets/Unavailable.png`;
+    }
 
-    const firstChar = md5Hash.charAt(0);
-    const firstTwoChars = md5Hash.substring(0, 2);
-
-    return `https://static.wikia.nocookie.net/tower-defense-sim/images/${firstChar}/${firstTwoChars}/${encodeURIComponent(filename)}`;
+    return window.mwFileUrl(filename);
   }
 
   if (imageUrlInput.value) {

@@ -35,13 +35,11 @@ import AboutModal from "./Shared/AboutModal.js";
 
 // node modules
 import * as bootstrap from "bootstrap";
-import CryptoJS from "crypto-js";
 
 const TDSVersion = "1.79.1"; // change GAME version number here
 
 window.clearUrlAndShowLanding = clearUrlAndShowLanding;
 window.bootstrap = bootstrap;
-window.CryptoJS = CryptoJS;
 
 import JSONViewerModule from "./components/TableMode/json-viewer.js";
 window.JSONViewer = JSONViewerModule;

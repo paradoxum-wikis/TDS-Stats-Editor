@@ -14,8 +14,8 @@
   "dependencies": {
     "bootstrap": "^5.3.8",
     "bootstrap-icons": "^1.13.1",
-    "crypto-js": "^4.2.0",
     "html2canvas": "^1.4.1",
+    "mediawiki-file-url": "^0.3.1",
     "wikistxr": "^0.0.8"
   },
   "devDependencies": {
