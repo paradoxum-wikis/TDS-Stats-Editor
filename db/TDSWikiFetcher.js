@@ -41,9 +41,36 @@ class TDSWikiFetcher {
     }
   }
 
-  async fetchTowers() {
+  /**
+   * Fetch tower list + enrich each tower.
+   *
+   * @param {object} [options]
+   * @param {(payload: {
+   *   phase: "list" | "enrich",
+   *   tower?: any,
+   *   index?: number,
+   *   total?: number,
+   *   completed?: number,
+   *   pending?: number,
+   *   percent?: number,
+   *   isDone?: boolean,
+   *   name?: string,
+   *   pageTitle?: string,
+   *   error?: any
+   * }) => void} [options.onProgress]
+   * @param {number} [options.concurrency=5]
+   * @returns {Promise<any[]>}
+   */
+  async fetchTowers(options = {}) {
+    const { onProgress, concurrency = 5 } = options;
+
     try {
       console.log("fetching towers from wiki API...");
+
+      const safeConcurrency =
+        Number.isFinite(concurrency) && concurrency > 0
+          ? Math.floor(concurrency)
+          : 5;
 
       const data = await this.fetchFromApi({
         page: this.sourcePage,
@@ -106,9 +133,82 @@ class TDSWikiFetcher {
           };
         });
 
-      await Promise.allSettled(
-        towers.map((tower) => this.enrichTowerData(tower)),
-      );
+      if (typeof onProgress === "function") {
+        try {
+          const total = towers.length;
+          onProgress({
+            phase: "list",
+            total,
+            completed: 0,
+            pending: total,
+            percent: 0,
+            isDone: total === 0,
+          });
+        } catch (e) {}
+      }
+
+      const total = towers.length;
+      let completed = 0;
+
+      const makeSummary = () => {
+        const pending = Math.max(0, total - completed);
+        const percent =
+          total > 0 ? Math.min(100, Math.round((completed / total) * 100)) : 0;
+
+        return {
+          total,
+          completed,
+          pending,
+          percent,
+          isDone: completed >= total,
+        };
+      };
+
+      const worker = async (startIndex) => {
+        for (let i = startIndex; i < towers.length; i += safeConcurrency) {
+          const tower = towers[i];
+          try {
+            await this.enrichTowerData(tower);
+            completed++;
+
+            if (typeof onProgress === "function") {
+              try {
+                onProgress({
+                  phase: "enrich",
+                  tower,
+                  index: i,
+                  name: tower?.name,
+                  pageTitle: tower?.pageTitle,
+                  ...makeSummary(),
+                });
+              } catch (e) {}
+            }
+          } catch (error) {
+            completed++;
+
+            if (typeof onProgress === "function") {
+              try {
+                onProgress({
+                  phase: "enrich",
+                  tower,
+                  index: i,
+                  name: tower?.name,
+                  pageTitle: tower?.pageTitle,
+                  error,
+                  ...makeSummary(),
+                });
+              } catch (e) {}
+            }
+          }
+        }
+      };
+
+      const workers = [];
+      for (let w = 0; w < Math.min(safeConcurrency, towers.length); w++) {
+        workers.push(worker(w));
+      }
+
+      await Promise.allSettled(workers);
 
       return towers;
     } catch (error) {

@@ -234,6 +234,35 @@ document.addEventListener("DOMContentLoaded", function () {
     refreshButton.innerHTML =
       '<i class="spinner-border spinner-border-sm me-2"></i>Refreshing...';
 
+    const featuredContainer = document.querySelector(".featured-towers");
+    const allTowersContainer = document.getElementById("all-towers");
+
+    const loadingBanner = document.createElement("div");
+    loadingBanner.className = "col-12 mb-3";
+    const loadingId = `loading-${Date.now()}`;
+    loadingBanner.innerHTML = `
+      <div id="${loadingId}" class="card h-100 bg-dark bg-gradient text-white">
+        <div class="card-body d-flex align-items-center justify-content-between gap-3">
+          <div class="d-flex align-items-center gap-2">
+            <div class="spinner-border spinner-border-sm text-info" role="status" aria-hidden="true"></div>
+            <div>
+              <div class="fw-bold">Commander, get me the towers before I (the) maul you...</div>
+              <div class="small text-muted">
+                <span data-loading-status>Starting…</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="text-end">
+            <div class="fw-bold"><span data-loading-count>0</span>/<span data-loading-total>?</span></div>
+            <div class="progress mt-1" style="width: 180px; height: 8px;">
+              <div class="progress-bar bg-info" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+
     try {
       window.originalCardsOrder = [];
 
@@ -241,7 +270,6 @@ document.addEventListener("DOMContentLoaded", function () {
         const cachedData = localStorage.getItem("towerDataCache");
         const cacheTimestamp = localStorage.getItem("towerDataTimestamp");
 
-        // use cache if it exists
         if (cachedData && cacheTimestamp) {
           const cacheAge = Date.now() - parseInt(cacheTimestamp);
           const cacheMaxAge = 12 * 60 * 60 * 1000; // 12 hours (modify the first number only)
@@ -261,22 +289,191 @@ document.addEventListener("DOMContentLoaded", function () {
         }
       }
 
-      document.getElementById("featured-towers").innerHTML =
-        '<div class="col-12 text-center text-light p-5"><div class="spinner-border" role="status"></div><p class="mt-2">Commander get the highlights before I sell you to Lord Exo.</p></div>';
+      featuredContainer.innerHTML = "";
+      allTowersContainer.innerHTML = "";
 
-      document.getElementById("all-towers").innerHTML =
-        '<div class="col-12 text-center text-light p-5"><div class="spinner-border" role="status"></div><p class="mt-2">Loading towers from the TDS Wiki...</p></div>';
+      featuredContainer.innerHTML =
+        '<div class="col-12 text-center text-light p-3 small text-muted">Loading highlights…</div>';
 
-      const towers = await wikiFetcher.fetchTowers(forceRefresh);
+      allTowersContainer.appendChild(loadingBanner);
 
-      localStorage.setItem("towerDataCache", JSON.stringify(towers));
+      const bannerEl = document.getElementById(loadingId);
+      const statusEl = bannerEl?.querySelector("[data-loading-status]");
+      const countEl = bannerEl?.querySelector("[data-loading-count]");
+      const totalEl = bannerEl?.querySelector("[data-loading-total]");
+      const barEl = bannerEl?.querySelector(".progress-bar");
+
+      const setProgress = (loaded, total, statusText) => {
+        if (typeof statusText === "string" && statusEl)
+          statusEl.textContent = statusText;
+        if (countEl) countEl.textContent = String(loaded);
+        if (totalEl) totalEl.textContent = total > 0 ? String(total) : "?";
+        if (barEl) {
+          const pct =
+            total > 0 ? Math.min(100, Math.round((loaded / total) * 100)) : 0;
+          barEl.style.width = `${pct}%`;
+          barEl.setAttribute("aria-valuenow", String(pct));
+        }
+      };
+
+      const data = await wikiFetcher.fetchFromApi({
+        page: wikiFetcher.sourcePage,
+        prop: "text",
+      });
+      if (data.error) throw new Error(data.error.info);
+
+      const htmlContent = data.parse?.text?.["*"];
+      if (!htmlContent) throw new Error("No source page content");
+
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(
+        `<body>${htmlContent}</body>`,
+        "text/html",
+      );
+      const towerElements = doc.querySelectorAll(".CategoryTreeItem");
+
+      const baseTowers = Array.from(towerElements)
+        .filter((element) =>
+          element.querySelector("a")?.href.includes("User_blog:"),
+        )
+        .map((element) => {
+          const link = element.querySelector("a");
+          let fullText = link?.textContent?.trim() || "Unknown Tower";
+
+          if (fullText.startsWith("User blog:"))
+            fullText = fullText.replace("User blog:", "");
+
+          const towerName = fullText.includes("/")
+            ? fullText.split("/").pop()
+            : fullText;
+          const href = link?.getAttribute("href") || "";
+          const pageTitle = href.replace(/^\/wiki\//, "") || fullText;
+
+          return {
+            name: towerName,
+            pageTitle: decodeURIComponent(pageTitle),
+            url: href,
+            image:
+              "https://static.wikia.nocookie.net/tower-defense-sim/images/4/4a/Site-favicon.ico",
+            author: fullText.includes("/")
+              ? fullText.split("/")[0]
+              : "Wiki Contributor",
+            featured: wikiFetcher.featuredTowers.includes(fullText),
+            highlighted: window.highlights
+              ? window.highlights.includes(fullText)
+              : false,
+            verified: window.approvedTowers
+              ? window.approvedTowers.includes(fullText)
+              : false,
+            unverified: window.approvedTowers
+              ? !window.approvedTowers.includes(fullText)
+              : true,
+            grandfathered: window.grandfatheredTowers
+              ? window.grandfatheredTowers.includes(fullText)
+              : false,
+            uploadDate: "Recently",
+          };
+        });
+
+      const total = baseTowers.length;
+      setProgress(0, total, "Fetching tower pages…");
+
+      featuredContainer.innerHTML = "";
+      const anyHighlightsExpected = baseTowers.some((t) => t.highlighted);
+      if (!anyHighlightsExpected) {
+        featuredContainer.innerHTML =
+          '<div class="col-12 text-center text-light p-3">No highlights at this time.</div>';
+      }
+
+      const concurrency = 5;
+      const streamedTowers = [];
+      const renderedFeaturedNames = new Set();
+      const renderedMainNames = new Set();
+      let completed = 0;
+
+      const onTowerReady = (tower) => {
+        streamedTowers.push(tower);
+
+        // featured/highlighted render
+        if (
+          tower.highlighted &&
+          !renderedFeaturedNames.has(tower.pageTitle || tower.name)
+        ) {
+          renderTowerCard(tower, featuredContainer);
+          renderedFeaturedNames.add(tower.pageTitle || tower.name);
+        }
+
+        // main list render
+        const mainKey = tower.pageTitle || tower.name;
+        if (!renderedMainNames.has(mainKey)) {
+          renderTowerCard(tower, allTowersContainer);
+          renderedMainNames.add(mainKey);
+        }
+      };
+
+      let nextIndex = 0;
+
+      const worker = async () => {
+        while (true) {
+          const i = nextIndex++;
+          if (i >= baseTowers.length) return;
+
+          const tower = baseTowers[i];
+          setProgress(completed, total, `Fetching… ${tower.name}`);
+
+          try {
+            await wikiFetcher.enrichTowerData(tower);
+          } catch (e) {
+            console.log(`Failed to fetch tower ${tower.name}:`, e);
+          }
+
+          completed++;
+          onTowerReady(tower);
+          setProgress(completed, total, `Loaded ${completed}/${total}`);
+
+          // Yield so UI repaints promptly (especially on slower machines)
+          await new Promise((r) => setTimeout(r, 0));
+        }
+      };
+
+      const workers = [];
+      for (let w = 0; w < Math.min(concurrency, baseTowers.length); w++) {
+        workers.push(worker());
+      }
+
+      await Promise.allSettled(workers);
+
+      localStorage.setItem("towerDataCache", JSON.stringify(streamedTowers));
       localStorage.setItem("towerDataTimestamp", Date.now().toString());
 
-      renderAllTowers(towers);
+      if (window.setupSearch) window.setupSearch();
+      if (window.applyFilters) window.applyFilters();
+      if (window.setupSorting) window.setupSorting();
+
+      setProgress(total, total, "Done");
+      if (bannerEl) {
+        bannerEl.classList.add("border", "border-success");
+        const spinner = bannerEl.querySelector(".spinner-border");
+        if (spinner) spinner.remove();
+      }
+
+      setTimeout(() => {
+        const el = document.getElementById(loadingId);
+        if (el && el.parentNode) {
+          el.parentNode.removeChild(el);
+        }
+      }, 1200);
     } catch (error) {
       console.error("Failed to load towers:", error);
-      document.getElementById("all-towers").innerHTML =
-        '<div class="col-12 text-center text-danger p-5"><i class="bi bi-exclamation-triangle-fill fs-1"></i><p class="mt-2">Failed to load towers from the wiki. Please try again later.</p></div>';
+
+      allTowersContainer.innerHTML = `
+        <div class="col-12">
+          <div class="alert alert-danger">
+            <div class="fw-bold"><i class="bi bi-exclamation-triangle-fill me-2"></i>Failed to load towers from the wiki.</div>
+            <div class="small">Please try again later.</div>
+          </div>
+        </div>
+      `;
     } finally {
       refreshButton.disabled = false;
       refreshButton.innerHTML =
