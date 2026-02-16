@@ -86,6 +86,8 @@ const approvedTowers = [
   "Vessel Of Infinite Destruction/Paintballer",
   "EconomyOnRoblox/Gladiator",
   "Yanboblox22/Suppliant",
+  "Vessel Of Infinite Destruction/Firework Technician",
+  "Vessel Of Infinite Destruction/Minigunner",
 ];
 
 // List of featured towers
@@ -110,6 +112,7 @@ const featuredTowers = [
   "Vessel Of Infinite Destruction/Golden Mortar",
   "Vessel Of Infinite Destruction/Paintballer",
   "Yanboblox22/Suppliant",
+  "Vessel Of Infinite Destruction/Firework Technician",
 ];
 
 // List of grandfathered towers
@@ -128,7 +131,7 @@ const highlights = [
   "Vessel Of Infinite Destruction/Golden Engineer",
   "Vessel Of Infinite Destruction/Golden Mortar",
   "Vessel Of Infinite Destruction/Toxic Gunner",
-  "Yanboblox22/Suppliant",
+  "Vessel Of Infinite Destruction/Firework Technician",
 ];
 
 window.approvedTowers = approvedTowers;
