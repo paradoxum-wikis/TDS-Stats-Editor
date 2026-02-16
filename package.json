@@ -16,7 +16,7 @@
     "bootstrap-icons": "^1.13.1",
     "html2canvas": "^1.4.1",
     "mediawiki-file-url": "^0.3.1",
-    "wikistxr": "^0.0.8"
+    "wikistxr": "^0.0.11"
   },
   "devDependencies": {
     "prettier": "3.7.4",
