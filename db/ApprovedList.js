@@ -75,7 +75,7 @@ const approvedTowers = [
   "Vessel Of Infinite Destruction/Soldier",
   "Vessel Of Infinite Destruction/Scout",
   "Vessel Of Infinite Destruction/Turret",
-  "Vessel Of Infinite Destruction/Toxic Gunner",
+  //  "Vessel Of Infinite Destruction/Toxic Gunner",
   "Hellscream2008/Lucky Shooter",
   "Vessel Of Infinite Destruction/Gatling Gunner",
   "Vessel Of Infinite Destruction/Golden Engineer",
@@ -88,6 +88,7 @@ const approvedTowers = [
   "Yanboblox22/Suppliant",
   "Vessel Of Infinite Destruction/Firework Technician",
   "Vessel Of Infinite Destruction/Minigunner",
+  "Vessel Of Infinite Destruction/Accelerator",
 ];
 
 // List of featured towers
@@ -113,6 +114,7 @@ const featuredTowers = [
   "Vessel Of Infinite Destruction/Paintballer",
   "Yanboblox22/Suppliant",
   "Vessel Of Infinite Destruction/Firework Technician",
+  "Vessel Of Infinite Destruction/Accelerator",
 ];
 
 // List of grandfathered towers
@@ -130,11 +132,11 @@ const grandfatheredTowers = [
 const highlights = [
   "Vessel Of Infinite Destruction/Golden Engineer",
   "Vessel Of Infinite Destruction/Golden Mortar",
-  "Vessel Of Infinite Destruction/Toxic Gunner",
   "Vessel Of Infinite Destruction/Firework Technician",
+  "Vessel Of Infinite Destruction/Accelerator",
 ];
 
 window.approvedTowers = approvedTowers;
 window.featuredTowers = featuredTowers;
 window.grandfatheredTowers = grandfatheredTowers;
-window.highlights = highlights;
+window["highlights"] = highlights;
