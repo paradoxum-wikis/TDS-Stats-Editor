@@ -117,8 +117,8 @@ class TDSWikiFetcher {
               ? fullText.split("/")[0]
               : "Wiki Contributor",
             featured: this.featuredTowers.includes(fullText),
-            highlighted: window.highlights
-              ? window.highlights.includes(fullText)
+            highlighted: Array.isArray(window["highlights"])
+              ? window["highlights"].includes(fullText)
               : false,
             verified: window.approvedTowers
               ? window.approvedTowers.includes(fullText)
@@ -210,6 +210,45 @@ class TDSWikiFetcher {
 
       await Promise.allSettled(workers);
 
+      try {
+        const pageIdToTower = new Map();
+        const pageIds = [];
+        for (const t of towers) {
+          if (t.pageid) {
+            const id = String(t.pageid);
+            pageIds.push(id);
+            pageIdToTower.set(id, t);
+          }
+        }
+
+        const batchSize = 50;
+        for (let i = 0; i < pageIds.length; i += batchSize) {
+          const batch = pageIds.slice(i, i + batchSize).join("|");
+          const qdata = await this.fetchFromApi({
+            action: "query",
+            pageids: batch,
+            prop: "revisions",
+            rvprop: "timestamp|user",
+            format: "json",
+          });
+
+          if (qdata?.query?.pages) {
+            for (const pid of Object.keys(qdata.query.pages)) {
+              const page = qdata.query.pages[pid];
+              const rev = page.revisions?.[0];
+              if (rev) {
+                const tower = pageIdToTower[String(page.pageid)];
+                if (tower) {
+                  tower.uploadDate = rev.timestamp;
+                }
+              }
+            }
+          }
+        }
+      } catch (e) {
+        console.warn("failed to batch fetch revisions:", e);
+      }
+
       return towers;
     } catch (error) {
       console.error("failed to get towers:", error);
@@ -224,6 +263,7 @@ class TDSWikiFetcher {
         prop: "text",
       });
       if (!data.parse?.text?.["*"]) throw new Error("No content");
+      if (data.parse?.pageid) tower.pageid = data.parse.pageid;
 
       const html = data.parse.text["*"];
       const parser = new DOMParser();
@@ -232,16 +272,7 @@ class TDSWikiFetcher {
 
       const descElement = doc.querySelector("#desc");
       if (descElement) {
-        const rawText = descElement.textContent.trim();
-        const parts = rawText.split("|").map((s) => s.trim());
-
-        const lastPart = parts[parts.length - 1];
-        if (lastPart.toLowerCase().startsWith("last updated:")) {
-          tower.uploadDate = lastPart.replace(/last updated:/i, "").trim();
-          parts.pop();
-        }
-
-        tower.description = parts.join(" | ");
+        tower.description = descElement.textContent.trim();
       } else {
         const p = contentElement.querySelector("p");
         if (p) tower.description = p.textContent.trim();
