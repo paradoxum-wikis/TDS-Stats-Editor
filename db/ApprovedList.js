@@ -114,6 +114,7 @@ const featuredTowers = [
   "Vessel Of Infinite Destruction/Paintballer",
   "Yanboblox22/Suppliant",
   "Vessel Of Infinite Destruction/Firework Technician",
+  "Vessel Of Infinite Destruction/Accelerator",
 ];
 
 // List of grandfathered towers
