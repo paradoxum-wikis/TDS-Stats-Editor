@@ -9,8 +9,6 @@ import "bootstrap-icons/font/bootstrap-icons.css";
 
 import * as bootstrap from "bootstrap";
 window.bootstrap = bootstrap;
-import CryptoJS from "crypto-js";
-window.CryptoJS = CryptoJS;
 import html2canvas from "html2canvas";
 window.html2canvas = html2canvas;
 
