@@ -5,11 +5,9 @@ updates:
     schedule:
       interval: "weekly"
       day: "monday"
-    open-pull-requests-limit: 10
-    versioning-strategy: auto
     labels:
       - "dependencies"
       - "npm"
-    commit-message:
-      prefix: "npm"
-      include: "scope"
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
