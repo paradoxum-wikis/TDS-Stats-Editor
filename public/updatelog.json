@@ -10,10 +10,7 @@
   {
     "version": "1.3.2",
     "date": "September 21, 2025",
-    "changes": [
-      "Flat damage buff added to boosts",
-      "Various bug fixes"
-    ]
+    "changes": ["Flat damage buff added to boosts", "Various bug fixes"]
   },
   {
     "version": "1.3.1",

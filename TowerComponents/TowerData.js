@@ -9881,8 +9881,10 @@ export default {
               KnockbackForce: 20,
               KnockbackDebounce: 3,
             },
-            Extras: ["Knockback Force: NaN → 20", "Knockback Debounce: NaN → 3"],
-            
+            Extras: [
+              "Knockback Force: NaN → 20",
+              "Knockback Debounce: NaN → 3",
+            ],
           },
         },
         {
@@ -9945,7 +9947,7 @@ export default {
           ExponentialValue: "NaN",
           MaxHits: 2,
         },
-        Note: "Hiddens can be attacked indirectly if a detectable enemy is nearby."
+        Note: "Hiddens can be attacked indirectly if a detectable enemy is nearby.",
       },
       Upgrades: [
         {
@@ -10049,10 +10051,7 @@ export default {
               ExponentialValue: 0.28,
               MaxHits: 3,
             },
-            Extras: [
-              "AOE Damage: 200 → 260",
-              "Bleed Stack: 3 → 6",
-            ],
+            Extras: ["AOE Damage: 200 → 260", "Bleed Stack: 3 → 6"],
           },
         },
       ],

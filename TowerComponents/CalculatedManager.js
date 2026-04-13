@@ -403,8 +403,7 @@ class CalculatedManager {
       },
       WarlockMelee: {
         For: ["Warlock"],
-        Value: (level) =>
-          (level.Damage + level["AOE Damage"]) / level.Cooldown,
+        Value: (level) => (level.Damage + level["AOE Damage"]) / level.Cooldown,
         Subtype: (skinData) => skinData.name.includes("Melee"),
       },
       Ace: {
