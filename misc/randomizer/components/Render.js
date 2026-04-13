@@ -124,7 +124,7 @@ export function renderTowerGallery(towers) {
     col.className = "col-4 col-md-2";
 
     const towerCard = document.createElement("div");
-    towerCard.className = "card bg-dark-subtle text-white h-100";
+    towerCard.className = "card bg-dark text-white h-100";
     towerCard.innerHTML = `
       <img src="${tower.imageUrl}" class="card-img-top p-2" alt="${tower.name}" style="object-fit: contain; height: 60px;">
       <div class="card-body p-1 text-center">
