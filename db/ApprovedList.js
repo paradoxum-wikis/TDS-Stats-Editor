@@ -89,7 +89,7 @@ const approvedTowers = [
   "Vessel Of Infinite Destruction/Firework Technician",
   "Vessel Of Infinite Destruction/Minigunner",
   "Vessel Of Infinite Destruction/Accelerator",
-  "Insoxuela/Hikari",
+  " Insoxeula/Hikari",
   "Hellscream2008/Scout & Operator",
   "Vessel Of Infinite Destruction/Shotgunner",
   "Thejen/Gatling Gun Reworked",

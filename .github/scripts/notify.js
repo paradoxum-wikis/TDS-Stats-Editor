@@ -265,7 +265,6 @@ async function sendMessage(
         "User-Agent": USER_AGENT,
         Cookie: COOKIE_HEADER,
         "X-Requested-With": "XMLHttpRequest",
-        ...form.getHeaders(),
       },
       body: form,
     },
