@@ -25,6 +25,11 @@
     "type": "regular"
   },
   {
+    "name": "Frost",
+    "imageUrl": "https://static.wikia.nocookie.net/tower-defense-sim/images/e/ec/FrostModeIcon.png",
+    "type": "regular"
+  },
+  {
     "name": "Hardcore",
     "imageUrl": "https://static.wikia.nocookie.net/tower-defense-sim/images/e/e4/HardcoreModeIcon.png",
     "type": "regular"
