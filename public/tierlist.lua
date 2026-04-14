@@ -179,7 +179,7 @@ local keywordMap = {
 	["Ducky Shotgunner"] = { file = "DuckyShotgunner0.png", category = "uncommon" },
 	["Holiday Shotgunner"] = { file = "HolidayShotgunner0.png", category = "exclusive" },
 	["Vigilante Shotgunner"] = { file = "VigilanteShotgunner0.png", category = "rare" },
-	["Phantom Shotgunner"] = { file = "Phantom Shotgunner 0.PNG", category = "uncommon" },
+	["Phantom Shotgunner"] = { file = "Phantom Shotgunner 0.png", category = "uncommon" },
 	["Dance Fever Shotgunner"] = { file = "DanceFeverShotgunner0.png", category = "uncommon" },
 	["Gardener Shotgunner"] = { file = "GardenerShotgunner0.png", category = "rare" },
 	["Null Shotgunner"] = { file = "NullShotgunner0.png", category = "uncommon" },
