@@ -192,6 +192,22 @@ function parseTowerAliases(luaContent) {
 }
 
 // find tower name, ignore case
+function getDisplayCategory(name) {
+  const info = towerData[name];
+  if (!info) return "";
+  if (info.categories && info.categories.includes("tower")) {
+    return info.category;
+  } else if (info.category === "golden") {
+    return "golden";
+  } else {
+    // skin
+    const parts = name.split(" ");
+    const baseName = parts[parts.length - 1];
+    const baseInfo = towerData[baseName];
+    return baseInfo ? baseInfo.category : info.category;
+  }
+}
+
 function findTowerCaseInsensitive(name) {
   if (towerData[name]) {
     return name;
@@ -234,7 +250,9 @@ function renderTierList() {
 
       if (towerInfo) {
         const imageUrl = getImageUrl(towerInfo.file);
-        towerElement.classList.add(`category-${towerInfo.category}`);
+        towerElement.classList.add(
+          `category-${getDisplayCategory(normalizedName)}`,
+        );
         towerElement.setAttribute("data-tooltip", normalizedName);
 
         const img = document.createElement("img");
@@ -298,7 +316,7 @@ function populateTowerGallery() {
     );
 
     const tower = document.createElement("div");
-    tower.className = `tower-item tier-item m-1 p-1 bg-dark border border-secondary category-${towerInfo.category || ""}`;
+    tower.className = `tower-item tier-item m-1 p-1 bg-dark border border-secondary category-${getDisplayCategory(name)}`;
     tower.setAttribute("data-tower", name);
     tower.setAttribute("data-tooltip", name);
 
@@ -726,8 +744,7 @@ function filterTowerGallery() {
   const towers = document.querySelectorAll("#tower-gallery .tower-item");
   towers.forEach((tower) => {
     const towerName = tower.getAttribute("data-tower").toLowerCase();
-    const category =
-      towerData[tower.getAttribute("data-tower")]?.category || "";
+    const category = getDisplayCategory(tower.getAttribute("data-tower"));
     const matchesSearch = searchTerm === "" || towerName.includes(searchTerm);
     const matchesCategory =
       category === "" || enabledCategories.includes(category);
