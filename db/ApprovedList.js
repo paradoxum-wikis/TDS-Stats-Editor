@@ -75,7 +75,7 @@ const approvedTowers = [
   "Vessel Of Infinite Destruction/Soldier",
   "Vessel Of Infinite Destruction/Scout",
   "Vessel Of Infinite Destruction/Turret",
-  //  "Vessel Of Infinite Destruction/Toxic Gunner",
+  "Vessel Of Infinite Destruction/Toxic Gunner",
   "Hellscream2008/Lucky Shooter",
   "Vessel Of Infinite Destruction/Gatling Gunner",
   "Vessel Of Infinite Destruction/Golden Engineer",
@@ -89,6 +89,14 @@ const approvedTowers = [
   "Vessel Of Infinite Destruction/Firework Technician",
   "Vessel Of Infinite Destruction/Minigunner",
   "Vessel Of Infinite Destruction/Accelerator",
+  "Insoxuela/Hikari",
+  "Hellscream2008/Scout & Operator",
+  "Vessel Of Infinite Destruction/Shotgunner",
+  "Thejen/Gatling Gun Reworked",
+  "Thejen/Ace Pilot (Reworked)",
+  "Thejen/Executioner (Rework)",
+  "RustyChroma/Marine",
+  "Thejen/Golden Necromancer",
 ];
 
 // List of featured towers
@@ -130,7 +138,7 @@ const grandfatheredTowers = [
 
 // its own section the page
 const highlights = [
-  "Vessel Of Infinite Destruction/Golden Engineer",
+  "Vessel Of Infinite Destruction/Shotgunner",
   "Vessel Of Infinite Destruction/Golden Mortar",
   "Vessel Of Infinite Destruction/Firework Technician",
   "Vessel Of Infinite Destruction/Accelerator",
