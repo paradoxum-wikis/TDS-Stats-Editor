@@ -15,12 +15,11 @@
     "bootstrap": "^5.3.8",
     "bootstrap-icons": "^1.13.1",
     "html2canvas": "^1.4.1",
-    "mediawiki-file-url": "^0.3.1",
-    "wikistxr": "^0.1.4"
+    "mediawiki-file-url": "^0.3.2",
+    "wikistxr": "^0.1.5"
   },
   "devDependencies": {
-    "prettier": "^3.8.1",
-    "vite": "^7.3.5",
-    "picomatch": "^4.0.4"
+    "prettier": "^3.8.4",
+    "vite": "^7.3.5"
   }
 }
