@@ -1,4 +1,6 @@
-import { WikitextHighlighter } from "wikistxr";
+import { ready, WikitextHighlighter } from "wikistxr";
+
+await ready;
 
 class WikitextViewer {
   constructor() {
