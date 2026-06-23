@@ -48,7 +48,7 @@ const app = new App();
 window.app = app;
 app.start();
 
-document.addEventListener("DOMContentLoaded", () => {
+(() => {
   new UpdateLog();
   new SidebarToggle();
   new CalcSystemUI();
@@ -99,7 +99,7 @@ document.addEventListener("DOMContentLoaded", () => {
       app.reload();
     }
   });
-});
+})();
 
 document.addEventListener("DOMContentLoaded", function () {
   const tooltipTriggerList = [].slice.call(
