@@ -10,6 +10,8 @@ If you're looking for the old stats editor, you can check the [legacy](https://g
 
 This monorepo now hosts the **tools hub**, and still, unfortunately, suffer from a lot of old legacy code.
 
+Everything inside `public/htmlassets/` folder is under CC-BY-SA 3.0, with game assets belonging to Paradoxum Games.
+
 ## License
 
 [MIT](./LICENSE)
