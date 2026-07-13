@@ -43,7 +43,7 @@ window.bootstrap = bootstrap;
         maps, gamemodes, and even full loadouts to spice up your runs!
       </p>
       <p>
-        This randomizer is part of the TDS Statistics Editor project,
+        This randomizer is part of TDS Tools,
         maintained by the Tower Defense Simulator Wiki community.
       </p>
     `,

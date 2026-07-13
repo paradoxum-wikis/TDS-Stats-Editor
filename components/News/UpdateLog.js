@@ -27,7 +27,7 @@ class UpdateLog {
       this.fetchCommits();
     }
 
-    // load json for editor only
+    // load JSON changelog outside of the DB page
     if (!isDbDirectory) {
       loadUpdateLog();
     }

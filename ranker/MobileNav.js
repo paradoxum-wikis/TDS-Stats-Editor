@@ -202,20 +202,26 @@ class MobileNavigation extends MobileNavBase {
 
     const navigationItems = [
       {
+        name: "TDS Tools Hub",
+        url: "../",
+        icon: "bi-house-fill",
+        description: "Back to the tools hub",
+      },
+      {
         name: "TDS Wiki",
         url: "https://tds.fandom.com/wiki/",
         icon: "bi-journal-text",
         description: "The Tower Defense Simulator Wiki itself",
       },
       {
-        name: "TDS Statistics Editor",
-        url: "../",
+        name: "Statistics Editor",
+        url: "https://se.tds.wiki/",
         icon: "bi-bar-chart-fill",
-        description: "Of course, the Statistics Editor",
+        description: "Create and edit tower statistics",
       },
       {
         name: "TDS Database",
-        url: "./db/",
+        url: "../db/",
         icon: "bi-database-fill",
         description:
           "The Database housing custom towers made by people like you!",

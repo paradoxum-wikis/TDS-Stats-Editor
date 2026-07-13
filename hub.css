@@ -1,0 +1,44 @@
+.tool-card {
+  transition:
+    transform 0.25s,
+    box-shadow 0.25s;
+  border: 1px solid rgb(255 255 255 / 0.1) !important;
+
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgb(0 0 0 / 0.3);
+    border-color: rgb(13 110 253 / 0.5) !important;
+
+    img {
+      transform: scale(1.05);
+    }
+  }
+
+  .card-body {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 200px;
+  }
+
+  img {
+    border-radius: 8px;
+    transition: transform 0.25s;
+  }
+}
+
+.landingimg {
+  min-width: 200px;
+  height: auto;
+}
+
+.card-body.text-center.p-4 img {
+  aspect-ratio: 512 / 159;
+  width: 15em;
+  margin: 1rem auto;
+  object-fit: cover;
+}
+
+a.btn.btn-primary:hover {
+  color: white !important;
+}

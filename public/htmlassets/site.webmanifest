@@ -1,6 +1,6 @@
 {
-  "name": "TDS Statistics Editor",
-  "short_name": "TDS:SE",
+  "name": "TDS Tools",
+  "short_name": "TDS Tools",
   "icons": [
     {
       "src": "/htmlassets/web-app-manifest-192x192.png",
@@ -15,7 +15,8 @@
       "purpose": "maskable"
     }
   ],
-  "theme_color": "#ffffff",
-  "background_color": "#ffffff",
-  "display": "standalone"
+  "theme_color": "#035D7C",
+  "background_color": "#121d23",
+  "display": "standalone",
+  "start_url": "/"
 }

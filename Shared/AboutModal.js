@@ -9,7 +9,7 @@ export default class AboutModal {
       title: options.title || "About Us",
       subtitle: options.subtitle || "Information about this tool",
       overviewText: options.overviewText || this.#getDefaultOverview(),
-      projectName: options.projectName || "TDS Statistics Editor",
+      projectName: options.projectName || "TDS Tools",
       showUpdateLog: options.showUpdateLog !== false,
       showCredits: options.showCredits !== false,
       showDonations: options.showDonations !== false,
@@ -27,9 +27,8 @@ export default class AboutModal {
   #getDefaultOverview() {
     return `
       <p>
-        The Statistics Editor (and thereby, the Database) is a
-        website and project owned by the community of Tower
-        Defense Simulator Wiki.
+        TDS Tools (and the Database) is a website and project
+        owned by the community of the Tower Defense Simulator Wiki.
       </p>
       <p>
         The official Tower Defense Simulator Wiki is hosted by
@@ -799,7 +798,7 @@ export default class AboutModal {
                     />
                     <h6 class="card-title">SneakyWolfy</h6>
                     <p class="card-text small text-muted">
-                      Original Developer<br />(Statistics Editor)
+                      Original Developer<br />(Stats Editor)
                     </p>
                     <a
                       href="https://github.com/SneakyWolfy"

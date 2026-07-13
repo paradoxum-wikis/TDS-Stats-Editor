@@ -25,8 +25,8 @@ document.addEventListener("DOMContentLoaded", () => {
         your hard-earned coins in-game.
       </p>
       <p>
-        This planner is part of the TDS Statistics Editor project,
-        maintained by the Tower Defense Simulator Wiki community.
+        This planner is part of TDS Tools, maintained by the
+        Tower Defense Simulator Wiki community.
       </p>
     `,
     showUpdateLog: false,

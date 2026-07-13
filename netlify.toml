@@ -3,3 +3,15 @@
   to = "https://tds-editor.com/:splat"
   status = 301
   force = true
+
+[[redirects]]
+  from = "/misc"
+  to = "/"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/misc/"
+  to = "/"
+  status = 301
+  force = true

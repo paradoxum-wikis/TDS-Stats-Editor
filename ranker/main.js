@@ -15,7 +15,6 @@ window.html2canvas = html2canvas;
 import ImageLoader from "../components/ImageLoader.js";
 import { renderTowerShorthands } from "./Shorthand.js";
 import "./MobileNav.js";
-import "../components/Slides.js";
 import "../components/News/UpdateLog.js";
 import "../components/SettingsManager.js";
 import AboutModal from "../Shared/AboutModal.js";
@@ -26,9 +25,8 @@ new AboutModal({
   subtitle: "Information about the Tier List Maker",
   overviewText: `
     <p>
-      Adachi's TDS Ranker is a part of the TDS Statistics
-      Editor, a project owned by the community of Tower Defense
-      Simulator Wiki.
+      Adachi's TDS Ranker is part of TDS Tools, a project owned
+      by the community of the Tower Defense Simulator Wiki.
     </p>
     <p>
       The official Tower Defense Simulator Wiki is hosted by

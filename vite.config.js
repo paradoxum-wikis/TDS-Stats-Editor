@@ -8,7 +8,6 @@ export default defineConfig({
         main: resolve(__dirname, "index.html"),
         ranker: resolve(__dirname, "ranker/index.html"),
         db: resolve(__dirname, "db/index.html"),
-        migrate: resolve(__dirname, "migrate.html"),
         privacy: resolve(__dirname, "privacy.html"),
         misc: resolve(__dirname, "misc/index.html"),
         skills: resolve(__dirname, "misc/skills/index.html"),
