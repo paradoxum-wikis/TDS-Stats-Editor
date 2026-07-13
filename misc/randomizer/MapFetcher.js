@@ -168,7 +168,7 @@ class MapFetcher {
               `[MapFetcher] Processing difficulty cell: "${difficultyCell}"`,
             );
             const difficultyMatch = difficultyCell.match(
-              /\{\{Colour?\|([^}|]+)\}\}/i,
+              /\{\{Color\|([^}|]+)\}\}/i,
             );
             if (difficultyMatch && difficultyMatch[1]) {
               map.difficulty = difficultyMatch[1];
