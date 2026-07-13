@@ -46,9 +46,12 @@ class MapFetcher {
         );
 
         const tableContent = tableMatch[0];
-        const lines = tableContent.split("\n").map((line) => line.trim());
+        const rows = tableContent
+          .split("|-")
+          .map((row) => row.trim())
+          .filter((row) => row.length > 0);
         console.log(
-          `[MapFetcher] Table #${tableCount} has ${lines.length} lines.`,
+          `[MapFetcher] Table #${tableCount} has ${rows.length} rows.`,
         );
 
         let currentDataRowType = null;
@@ -59,37 +62,45 @@ class MapFetcher {
           enemiesBeta: [],
         };
 
-        for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
-          const line = lines[lineIndex];
-          console.log(`[MapFetcher] Processing line ${lineIndex}: "${line}"`);
+        for (let rowIndex = 0; rowIndex < rows.length; rowIndex++) {
+          const row = rows[rowIndex];
+          const headerStartIndex = row.indexOf("!");
+          if (headerStartIndex === -1) {
+            continue;
+          }
 
-          if (line.startsWith("!") && !line.startsWith("|-")) {
-            console.log(`[MapFetcher] Found header line: ${line}`);
-            if (line.includes("Map")) {
-              currentDataRowType = "name";
-              console.log(`[MapFetcher] Switching to name data row type`);
-            } else if (line.includes("Difficulty")) {
-              currentDataRowType = "difficulty";
-              console.log(`[MapFetcher] Switching to difficulty data row type`);
-            } else if (line.includes("Enemies Beta?")) {
-              currentDataRowType = "enemiesBeta";
-              console.log(
-                `[MapFetcher] Switching to enemiesBeta data row type`,
-              );
-            } else {
-              currentDataRowType = "image";
-              console.log(`[MapFetcher] Switching to image data row type`);
-            }
-          } else if (
-            line.startsWith("|") &&
-            !line.startsWith("|-") &&
-            currentDataRowType
-          ) {
+          const normalizedRow = row.slice(headerStartIndex).trim();
+          if (!normalizedRow.startsWith("!")) {
+            continue;
+          }
+
+          console.log(
+            `[MapFetcher] Processing row ${rowIndex}: "${normalizedRow}"`,
+          );
+
+          const headerMatch = normalizedRow.match(/^!\s*([^|!\n]*)/);
+          const normalizedHeader = (headerMatch?.[1] || "")
+            .trim()
+            .toLowerCase();
+          if (normalizedHeader.includes("map")) {
+            currentDataRowType = "name";
+            console.log(`[MapFetcher] Switching to name data row type`);
+          } else if (normalizedHeader.includes("difficulty")) {
+            currentDataRowType = "difficulty";
+            console.log(`[MapFetcher] Switching to difficulty data row type`);
+          } else if (normalizedHeader.includes("enemies beta")) {
+            currentDataRowType = "enemiesBeta";
+            console.log(`[MapFetcher] Switching to enemiesBeta data row type`);
+          } else {
+            currentDataRowType = "image";
+            console.log(`[MapFetcher] Switching to image data row type`);
+          }
+
+          if (currentDataRowType) {
             console.log(
-              `[MapFetcher] Found data line for ${currentDataRowType}: ${line}`,
+              `[MapFetcher] Found data row for ${currentDataRowType}: ${normalizedRow}`,
             );
-
-            const cells = this.parseWikiTableCells(line);
+            const cells = this.parseWikiTableCells(normalizedRow);
             console.log(`[MapFetcher] Extracted ${cells.length} cells:`, cells);
             extractedRows[currentDataRowType].push(...cells);
             console.log(
@@ -106,8 +117,7 @@ class MapFetcher {
         const numMapsInTable = Math.min(
           extractedRows.image.length,
           extractedRows.name.length,
-          extractedRows.difficulty.length,
-          extractedRows.enemiesBeta.length,
+          extractedRows.difficulty.length || extractedRows.name.length,
         );
         console.log(
           `[MapFetcher] Number of maps to process in table #${tableCount}: ${numMapsInTable}`,
@@ -158,7 +168,7 @@ class MapFetcher {
               `[MapFetcher] Processing difficulty cell: "${difficultyCell}"`,
             );
             const difficultyMatch = difficultyCell.match(
-              /\{\{Colour\|([^}|]+)\}\}/,
+              /\{\{Colour?\|([^}|]+)\}\}/i,
             );
             if (difficultyMatch && difficultyMatch[1]) {
               map.difficulty = difficultyMatch[1];
@@ -166,9 +176,9 @@ class MapFetcher {
                 `[MapFetcher] Map ${i} difficulty: ${map.difficulty}`,
               );
             } else {
-              map.difficulty = "Unknown";
-              console.warn(
-                `[MapFetcher] Map ${i} difficulty not found for cell: "${difficultyCell}", using fallback.`,
+              map.difficulty = difficultyCell.trim();
+              console.log(
+                `[MapFetcher] Map ${i} difficulty (raw): ${map.difficulty}`,
               );
             }
           } else {
@@ -208,8 +218,8 @@ class MapFetcher {
     }
   }
 
-  parseWikiTableCells(line) {
-    const content = line.substring(1);
+  parseWikiTableCells(row) {
+    const content = row.replace(/^!\s*[^|!\n]*/, "");
     const cells = [];
     let currentCell = "";
     let bracketDepth = 0;
@@ -241,8 +251,7 @@ class MapFetcher {
         if (braceDepth === 0) {
           inBraces = false;
         }
-      } else if (char === "|" && !inBrackets && !inBraces) {
-        // This is a cell separator
+      } else if ((char === "|" || char === "!") && !inBrackets && !inBraces) {
         if (currentCell.trim()) {
           cells.push(currentCell.trim());
         }

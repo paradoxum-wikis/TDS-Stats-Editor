@@ -51,62 +51,65 @@ class LoadoutFetcher {
         );
 
         const tableContent = tableMatch[0];
-        const lines = tableContent.split("\n").map((line) => line.trim());
+        const rows = tableContent
+          .split("|-")
+          .map((row) => row.trim())
+          .filter((row) => row.length > 0);
         console.log(
-          `[LoadoutFetcher] Table #${tableCount} has ${lines.length} lines.`,
+          `[LoadoutFetcher] Table #${tableCount} has ${rows.length} rows.`,
         );
         console.log(
-          `[LoadoutFetcher] First 10 lines of table #${tableCount}:`,
-          lines.slice(0, 10),
+          `[LoadoutFetcher] First 10 rows of table #${tableCount}:`,
+          rows.slice(0, 10),
         );
 
-        let isImageRow = false;
         const imageAndLinkCells = [];
 
-        for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
-          const line = lines[lineIndex];
+        for (let rowIndex = 0; rowIndex < rows.length; rowIndex++) {
+          const row = rows[rowIndex];
+          const headerStartIndex = row.indexOf("!");
+          if (headerStartIndex === -1) {
+            continue;
+          }
+
+          const normalizedRow = row.slice(headerStartIndex).trim();
+          if (!normalizedRow.startsWith("!")) {
+            continue;
+          }
+
           console.log(
-            `[LoadoutFetcher] Processing line ${lineIndex}: "${line}"`,
+            `[LoadoutFetcher] Processing row ${rowIndex}: "${normalizedRow}"`,
           );
 
-          if (line.startsWith("!") && !line.startsWith("|-")) {
-            console.log(`[LoadoutFetcher] Found header line: ${line}`);
-            if (
-              line.includes("Tower") ||
-              line.includes("Unlock Method") ||
-              line.includes("Level Required") ||
-              line.includes("Unlock Cost")
-            ) {
-              isImageRow = false;
-              console.log(
-                `[LoadoutFetcher] Setting isImageRow = false (text header)`,
-              );
-            } else {
-              isImageRow = true;
-              console.log(
-                `[LoadoutFetcher] Setting isImageRow = true (image header)`,
-              );
-            }
-          } else if (
-            line.startsWith("|") &&
-            !line.startsWith("|-") &&
-            isImageRow
-          ) {
-            console.log(`[LoadoutFetcher] Found image row data line: ${line}`);
-            const cellContent = line.substring(1).trim();
-            console.log(
-              `[LoadoutFetcher] Processing cell content: "${cellContent}"`,
-            );
+          const headerMatch = normalizedRow.match(/^!\s*([^|!\n]*)/);
+          const normalizedHeader = (headerMatch?.[1] || "")
+            .trim()
+            .toLowerCase();
+          const isImageRow =
+            !normalizedHeader.includes("tower") &&
+            !normalizedHeader.includes("unlock method") &&
+            !normalizedHeader.includes("level required") &&
+            !normalizedHeader.includes("unlock cost");
 
+          if (!isImageRow) {
+            console.log(
+              `[LoadoutFetcher] Skipping non-image row header: "${normalizedHeader}"`,
+            );
+            continue;
+          }
+
+          console.log(
+            `[LoadoutFetcher] Found image row data row: ${normalizedRow}`,
+          );
+          const cells = this.parseWikiTableCells(normalizedRow);
+          for (const cellContent of cells) {
             if (cellContent) {
               imageAndLinkCells.push(cellContent);
-              console.log(
-                `[LoadoutFetcher] imageAndLinkCells now has ${imageAndLinkCells.length} entries`,
-              );
             }
-          } else {
-            console.log(`[LoadoutFetcher] Skipping line: "${line}"`);
           }
+          console.log(
+            `[LoadoutFetcher] imageAndLinkCells now has ${imageAndLinkCells.length} entries`,
+          );
         }
 
         console.log(
@@ -168,6 +171,60 @@ class LoadoutFetcher {
       console.error("[LoadoutFetcher] Error stack:", error.stack);
       return [];
     }
+  }
+
+  parseWikiTableCells(row) {
+    const content = row.replace(/^!\s*[^|!\n]*/, "");
+    const cells = [];
+    let currentCell = "";
+    let bracketDepth = 0;
+    let braceDepth = 0;
+    let inBrackets = false;
+    let inBraces = false;
+
+    for (let i = 0; i < content.length; i++) {
+      const char = content[i];
+      const nextChar = content[i + 1];
+
+      if (char === "[" && nextChar === "[") {
+        inBrackets = true;
+        bracketDepth++;
+        currentCell += char;
+      } else if (char === "]" && nextChar === "]" && inBrackets) {
+        bracketDepth--;
+        currentCell += char;
+        if (bracketDepth === 0) {
+          inBrackets = false;
+        }
+      } else if (char === "{" && nextChar === "{") {
+        inBraces = true;
+        braceDepth++;
+        currentCell += char;
+      } else if (char === "}" && nextChar === "}" && inBraces) {
+        braceDepth--;
+        currentCell += char;
+        if (braceDepth === 0) {
+          inBraces = false;
+        }
+      } else if (
+        (char === "|" || char === "!") &&
+        !inBrackets &&
+        !inBraces
+      ) {
+        if (currentCell.trim()) {
+          cells.push(currentCell.trim());
+        }
+        currentCell = "";
+      } else {
+        currentCell += char;
+      }
+    }
+
+    if (currentCell.trim()) {
+      cells.push(currentCell.trim());
+    }
+
+    return cells;
   }
 }
 
